@@ -1,4 +1,6 @@
-FROM ros:humble-ros-base 
+FROM ros:humble-ros-base
+
+ARG ROS_DISTRO=humble
 
 RUN apt-get update && apt-get install -y \
   # Install libfranka build depencencies
@@ -27,8 +29,7 @@ RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
   sed -i 's/kGripperMaxSpeed = 0.150;/kGripperMaxSpeed = 1.0;/g' ros2_robotiq_gripper/robotiq_driver/src/hardware_interface.cpp && \
   vcs import . --input ros2_robotiq_gripper/ros2_robotiq_gripper.humble.repos && \
   apt-get update && \
-  rosdep update && \
-  rosdep install --from-paths . --ignore-src -r -y && \
+  rosdep install --rosdistro ${ROS_DISTRO} --from-paths . --ignore-src -r -y && \
   colcon build --install-base /opt/ros/humble/franka --cmake-args -DCMAKE_BUILD_TYPE=Release && \
   cd .. && \
   rm -rf tmp_build && \
@@ -40,8 +41,7 @@ RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
   git clone https://github.com/ros-visualization/rqt_reconfigure.git --branch humble && \
   cd rqt_reconfigure && \
   apt-get update && \
-  rosdep update && \
-  rosdep install --from-paths . --ignore-src -r -y && \
+  rosdep install --rosdistro ${ROS_DISTRO} --from-paths . --ignore-src -r -y && \
   colcon build --install-base /opt/ros/humble/franka --cmake-args -DCMAKE_BUILD_TYPE=Release && \
   cd .. && \
   rm -rf /tmp/rqt_reconfigure && \
@@ -60,11 +60,10 @@ mkdir -p /tmp/franka_ros2 && cd /tmp/franka_ros2 && \
   git clone --recursive https://github.com/frankarobotics/franka_ros2.git --branch ${FRANKA_ROS2_VERSION} && \
   git clone --recursive https://github.com/frankarobotics/franka_description.git --branch ${FRANKA_DESCRIPTION_VERSION} && \
   apt-get update && \
-  rosdep update && \
-  rosdep install --from-paths . --ignore-src -r -y && \
+  rosdep install --rosdistro ${ROS_DISTRO} --from-paths . --ignore-src -r -y && \
   rm -rf /var/lib/apt/lists/* && \
   colcon build --install-base /opt/ros/humble/franka --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=off  && \
-  cd .. && \ 
+  cd .. && \
   rm -rf /tmp/franka_ros2 && \
   echo "source /opt/ros/humble/franka/setup.bash" >> ~/.bashrc && \
   echo "source /opt/ros/humble/franka/setup.sh" >> ~/.profile'

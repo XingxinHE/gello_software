@@ -1,4 +1,18 @@
-# GELLO Implementation for Franka FR3 with ROS 2 (Humble) 
+# TLDR
+```
+# terminal 1
+ros2 launch franka_gello_state_publisher main.launch.py config_file:=franka_gello_single.yaml
+
+# terminal 2
+ros2 launch franka_fr3_arm_controllers franka_fr3_arm_controllers.launch.py robot_config_file:=example_fr3_config.yaml
+
+# terminal 3
+ros2 launch franka_gripper_manager franka_gripper_client.launch.py config_file:=example_fr3_config_franka_hand.yaml
+```
+
+
+
+# GELLO Implementation for Franka FR3 with ROS 2 (Humble)
 
 This folder contains all required ROS 2 packages for using GELLO with a Franka FR3 robot.
 
@@ -6,28 +20,28 @@ This folder contains all required ROS 2 packages for using GELLO with a Franka F
 
 ### Option 1: VS-Code Dev-Container (recommended)
 
-We recommend working inside the provided VS-Code Dev-Container for a seamless development experience. Dev-Containers allow you to use a consistent environment with all necessary dependencies pre-installed. 
+We recommend working inside the provided VS-Code Dev-Container for a seamless development experience. Dev-Containers allow you to use a consistent environment with all necessary dependencies pre-installed.
 
 To start the Dev-Container, open the `ros2` sub-folder of this repository (not the entire `gello_software` folder) in VS Code. If prompted, select **"Reopen in Container"** to launch the workspace inside the Dev-Container. If you are not prompted, open the Command Palette (`Ctrl+Shift+P`) and select **"Dev Containers: Reopen in Container"**. Building the container for the first time will take a few minutes. For more information, refer to the [VS-Code Dev-Containers documentation](https://code.visualstudio.com/docs/devcontainers/containers).
 
 If you choose not to use the Dev-Container, please refer to the [Local Setup](#option-2-local-setup) section below for manual installation instructions.
 
-> 💡 **Hint:**  
+> 💡 **Hint:**
 > The Dev-Container uses specific versions of `libfranka`, `franka_ros2`, and `franka_description` that are compatible with certain robot system versions. Please ensure these versions match your robot's system version by referring to the [compatibility documentation](https://frankarobotics.github.io/docs/compatibility.html). If necessary, you can modify the version arguments in the Dockerfile to match your robot's requirements.
 
 ### Option 2: Local Setup
 
 #### Prerequisites
 
-- **ROS 2 Humble Desktop** must be installed.  
+- **ROS 2 Humble Desktop** must be installed.
   See the [official installation guide](https://docs.ros.org/en/humble/Installation.html) for instructions.
-- **libfranka** and **franka_ros2** must be installed.  
+- **libfranka** and **franka_ros2** must be installed.
   Refer to the [Franka Robotics documentation](https://frankarobotics.github.io/docs/index.html) for installation steps and compatibility information.
-- **ros2_robotiq_gripper** (if required) must be installed.  
+- **ros2_robotiq_gripper** (if required) must be installed.
   See the [ros2_robotiq_gripper GitHub repository](https://github.com/PickNikRobotics/ros2_robotiq_gripper) for installation and usage instructions.
 - We recommend using Cyclone DDS as ROS 2 RMW. Refer to [the ROS 2 documentation](https://docs.ros.org/en/humble/Installation/RMW-Implementations/DDS-Implementations/Working-with-Eclipse-CycloneDDS.html) for installation instructions and detailed information.
 
-> 💡 **Hint:**  
+> 💡 **Hint:**
 > You can also find example installation commands for `libfranka`, `franka_ros2`, and `ros2_robotiq_gripper` in the [Dockerfile](./.devcontainer/Dockerfile) located in the `ros2/.devcontainer` directory. These commands can be copy-pasted for your local setup.
 
 #### Further Dependency Installations
@@ -72,9 +86,9 @@ If you add new dependencies to your packages, remember to update the relevant `r
 
 ## Detailed Launch Routine and Configuration
 
-### 1. **Run the GELLO Publisher**  
+### 1. **Run the GELLO Publisher**
 #### Step 1: Determine the port IDs of your communication converters
-      
+
 To proceed, you need to know the port IDs of your communication converters (U2D2 or OpenRB-150).
 This can be determined by running:
 
@@ -83,7 +97,7 @@ ls /dev/serial/by-id
 ```
 
 Example output:
-- U2D2: `usb-FTDI_USB__-__Serial_Converter_FT7WBG6` 
+- U2D2: `usb-FTDI_USB__-__Serial_Converter_FT7WBG6`
 - OpenRB-150: `usb-ROBOTIS_OpenRB-150_2B375CB3503059384C2E3120FF053624-if00`
 
 Use the ID to update the `com_port` parameter in your GELLO configuration file located in `/workspace/ros2/src/franka_gello_state_publisher/config/`.
@@ -97,7 +111,7 @@ colcon build
 
 #### Step 2: Configure the assembly offsets of your GELLO
 
-> 🚀 **Skip this step for pre-assembled GELLOs:**  
+> 🚀 **Skip this step for pre-assembled GELLOs:**
 > If you are using the pre-assembled "Franka GELLO" (single arm) or "Franka GELLO Duo" variant, or if you assembled it carefully according to the assembly instructions, the default configuration files provided in `franka_gello_state_publisher/config/` should work out of the box. You can proceed directly to **Step 3**.
 
 If you have assembled the GELLO yourself, you need to determine the following parameters for your specific assembly:
@@ -108,7 +122,7 @@ If you have assembled the GELLO yourself, you need to determine the following pa
 Use the `get_offsets.py` script in `/ros2/src/franka_gello_state_publisher/scripts/` to determine the `assembly_offsets` and `gripper_range_rad` parameters for your specific assembly.
 
 1. Move the GELLO arm(s) to the calibration pose, depending on if it is a single arm or dual arm assembly:
-   
+
     <p align="left">
       <img src="../imgs/franka_gello_single_v05_annotated.jpg" height="300px"/>
       <img src="../imgs/franka_gello_duo_v05_annotated.jpg" height="300px"/>
@@ -141,7 +155,7 @@ Use the `get_offsets.py` script in `/ros2/src/franka_gello_state_publisher/scrip
       ```
 
 Use the output of the `get_offsets.py` script to update the values in your GELLO configuration file located in `/workspace/ros2/src/franka_gello_state_publisher/config/`.
-      
+
 Rebuild the project to ensure the updated configuration is applied:
 
 ```bash
@@ -149,7 +163,7 @@ cd /workspace/ros2
 colcon build
 ```
 
-#### Step 3: Launch the GELLO publisher:  
+#### Step 3: Launch the GELLO publisher:
 
 Create a configuration file in `src/franka_gello_state_publisher/config/` or modify one of the provided example configuration files. Then launch the node to read input from the Gello and publish it as ROS 2 messages:
 
@@ -183,11 +197,11 @@ This is done by setting the following parameters in the configuration file. Each
 
 When the GELLO publisher is started, these parameters are used to configure the Dynamixel motors. The motors then operate in their internal "Current-based Position Control" mode with a current limit set to 600mA. Check the [Dynamixel documentation](https://emanual.robotis.com/docs/en/dxl/x/xl330-m288/) for more information on the control parameters.
 
-> ⚠️ **Warning for OpenRB-150:**  
+> ⚠️ **Warning for OpenRB-150:**
 > If using the OpenRB-150 instead of the U2D2 communication converter, do not enable torque until an external 5V power supply is connected to the board's power terminal and the jumper is set to "VIN(DXL)". Using USB power for torque operation may damage your computer's USB port.
 > Please refer to the [OpenRB-150 manual](https://emanual.robotis.com/docs/en/parts/controller/openrb-150/#when-running-5v-dynamixel-with-the-usb-power) for more information.
 
-> 💡 **Hint:**  
+> 💡 **Hint:**
 > The example configuration files give a good starting point for these values:
 > - springs in joints 1, 2, 4 and gripper.
 > - damping in all joints, stronger for lower joints
@@ -195,10 +209,10 @@ When the GELLO publisher is started, these parameters are used to configure the 
 >
 > You can also adjust these ROS2 parameters during runtime, e.g. using rqt with the `rqt_reconfigure` plugin.
 
-> 💡 **How strong are the virtual springs?**  
+> 💡 **How strong are the virtual springs?**
 > According to the Dynamixel XL330-M288 datasheet, the stall torque of the motors is 0.52 Nm (at 5.0 V, 1.47 A). However, continuous operation at this current will quickly overload and overheat the motors. Through testing, a current limit of 600 mA was found to be both safe and sufficient for our use case, corresponding to a maximum stall torque of approximately 0.21 Nm. Setting `dynamixel_kp_p` to 280 yields a spring constant of approximately 0.25 Nm/rad, which matches the physical torsion spring (McMaster-Carr 9271K53) used in the GELLO FR3 assembly — up to a deflection of about 48° where the current limit is reached.
 
-### 2. **Launch the Joint Impedance Controller**  
+### 2. **Launch the Joint Impedance Controller**
 
 Create a configuration file in `src/franka_fr3_arm_controllers/config/` or modify one of the provided example configuration files. Then launch the controller to send torque commands to the Franka robot:
 
@@ -210,17 +224,17 @@ The `robot_config_file` argument is **optional**. If not provided, it defaults t
 
 **Configuration parameters:**
 - The parameters are documented in [`franka.launch.py`](src/franka_fr3_arm_controllers/launch/franka.launch.py) (see line 16 and following).
-  
+
 ### 3. **Launch the Gripper Manager**
 
 Create a configuration file in `src/franka_gripper_manager/config/` or modify one of the provided example configuration files. Then launch the gripper manager node to control the gripper:
 
-- **For the Franka Hand**:  
+- **For the Franka Hand**:
     ```bash
     ros2 launch franka_gripper_manager franka_gripper_client.launch.py [config_file:=your_config.yaml]
     ```
 
- - **For the Robotiq 2F-85**:  
+ - **For the Robotiq 2F-85**:
    ```bash
    ros2 launch franka_gripper_manager robotiq_gripper_controller_client.launch.py [config_file:=your_config.yaml]
    ```
@@ -256,7 +270,7 @@ This package provides a ROS 2 node that reads input from the GELLO and publishes
 - **`main.launch.py`**: Launches the GELLO publisher node.
 
 ### 3. `franka_gripper_manager`
-This package provides a ROS 2 node for managing the gripper connected to the Franka robot. Supported grippers are either the `Franka Hand` or the `Robotiq 2F-85`. It allows sending commands to control the gripper's width and perform homing actions. 
+This package provides a ROS 2 node for managing the gripper connected to the Franka robot. Supported grippers are either the `Franka Hand` or the `Robotiq 2F-85`. It allows sending commands to control the gripper's width and perform homing actions.
 
 #### Key Features:
 - Subscribes to `/gripper/gripper_client/target_gripper_width_percent` for gripper width commands.
@@ -268,7 +282,7 @@ This package provides a ROS 2 node for managing the gripper connected to the Fra
 
 ## Build and Test
 
-> ⚠️ **Important:**  
+> ⚠️ **Important:**
 > All commands for building and testing must be executed from the `ros2` directory of this repository.
 
 ### Building the project
@@ -284,7 +298,7 @@ colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCHECK_TIDY=ON
 The packages come with a set of tests, which can be executed using the following command:
 
 ```bash
-colcon test 
+colcon test
 ```
 
 ## Troubleshooting
@@ -294,7 +308,7 @@ colcon test
 The open com port could not be opened. Possible reasons are:
 - Wrongly specified, the full path is required, such as: `/dev/serial/by-id/usb-FTDI_***`
 - The device was plugged in after the docker container started, re-open the container
-  
+
 ### libfranka: Incompatible library version (server version: X, library version: Y).
 
 The libfranka version and robot system version are not compatible. More information can be found [here](https://frankarobotics.github.io/docs/compatibility.html).
